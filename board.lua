@@ -291,24 +291,21 @@ function ThermoSudokuBoard:isThermoViolation(row, col)
     return self.thermo_violations[key] or false
 end
 
--- Validate a single thermo against working values; returns true if valid (or not fully filled)
+-- Validate a single thermo against working values; returns true if valid (or not fully filled).
+-- An empty cell (v == 0) does NOT reset the comparison — subsequent filled cells must still
+-- be greater than the last filled cell seen before the gap.
 function ThermoSudokuBoard:validateThermo(thermo)
     local cells = thermo.cells
-    local prev = 0
+    local prev = 0  -- last non-zero value seen; 0 means no filled cell yet
     for _, cell in ipairs(cells) do
         local v = self:getWorkingValue(cell.r, cell.c)
-        if v == 0 then
-            -- Not fully filled — treat path so far as valid
-            prev = v
-        else
-            if v <= prev and prev ~= 0 then
-                return false
-            end
+        if v ~= 0 then
             if prev ~= 0 and v <= prev then
                 return false
             end
             prev = v
         end
+        -- Empty cells are skipped; prev retains the last filled value
     end
     return true
 end
