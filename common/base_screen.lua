@@ -42,9 +42,11 @@ function BaseScreen:init()
     self.vertical_align    = "center"
     self.note_mode         = false
     self.undo_button       = nil
+
     if Device:hasKeys() then
-        self.key_events.Close = { { Device.input.group.Back } }
+        self.key_events = { Close = { { Device.input.group.Back } } }
     end
+
     self.status_text = TextWidget:new{
         text = _("Tap a cell, then pick a number."),
         face = Font:getFace("smallinfofont"),
@@ -63,7 +65,7 @@ function BaseScreen:paintTo(bb, x, y)
     local offset_x = x + math.floor((self.dimen.w - content_size.w) / 2)
     local offset_y = y
     if self.vertical_align == "center" then
-        offset_y = offset_y + math.floor((self.dimen.h - content_size.h) / 2)
+        offset_y = offset_y + math.max(0, math.floor((self.dimen.h - content_size.h) / 2))
     end
     self.layout:paintTo(bb, offset_x, offset_y)
 end
@@ -203,6 +205,8 @@ end
 function BaseScreen:onClose()
     self.plugin:saveState()
     self.plugin:onScreenClosed()
+    UIManager:close(self)
+    UIManager:setDirty(nil, "full")
 end
 
 function BaseScreen:onUndo()
@@ -216,6 +220,17 @@ function BaseScreen:onUndo()
     self.plugin:saveState()
     self:updateUndoButton()
     self:updateDigitButtons()
+end
+
+-- ---------------------------------------------------------------------------
+-- Close button config (for use in ButtonTable rows)
+-- ---------------------------------------------------------------------------
+
+function BaseScreen:makeCloseButtonConfig()
+    return {
+        text     = _("Close"),
+        callback = function() self:onClose() end,
+    }
 end
 
 -- ---------------------------------------------------------------------------
