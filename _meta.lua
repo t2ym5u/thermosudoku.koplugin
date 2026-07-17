@@ -3,5 +3,5 @@ return {
     name        = "thermosudoku",
     fullname    = _("Thermo Sudoku"),
     description = _("Sudoku with thermometer constraints"),
-    version     = "1.2.4",
+    version     = "1.2.5",
 }
