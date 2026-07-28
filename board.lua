@@ -42,12 +42,24 @@ local DEFAULT_DIFFICULTY = "medium"
 -- Returns array of { cells = {{r,c},...} } with 3-5 cells each.
 local function placeThermos(solution)
     local n = 9
-    -- Possible directions: right, down, diag-down-right, diag-down-left
+    -- All 8 compass directions -- using only the 4 "forward" ones (right/
+    -- down/both down-diagonals) left corner cells unreachable as a path
+    -- cell (arriving at a corner would require a source with a negative
+    -- row/col), so thermometers clustered heavily toward the grid's
+    -- center and almost never touched the corner boxes. All 8 directions
+    -- make every cell reachable from some source, spreading thermometers
+    -- across the whole grid. (The reversed-direction retry below already
+    -- handles which end becomes the bulb; this is about which cells the
+    -- path occupies at all.)
     local directions = {
-        { dr = 0,  dc = 1  },
-        { dr = 1,  dc = 0  },
-        { dr = 1,  dc = 1  },
-        { dr = 1,  dc = -1 },
+        { dr = 0,  dc = 1  },  -- right
+        { dr = 0,  dc = -1 },  -- left
+        { dr = 1,  dc = 0  },  -- down
+        { dr = -1, dc = 0  },  -- up
+        { dr = 1,  dc = 1  },  -- diag down-right
+        { dr = 1,  dc = -1 },  -- diag down-left
+        { dr = -1, dc = 1  },  -- diag up-right
+        { dr = -1, dc = -1 },  -- diag up-left
     }
 
     local thermos = {}
@@ -55,40 +67,54 @@ local function placeThermos(solution)
 
     local function cellKey(r, c) return r * 100 + c end
 
-    local attempts = 0
-    local max_attempts = 200
+    -- Even with all 8 directions available, uniformly-random start-cell
+    -- placement still favors the grid's center: any bounded-length path
+    -- dropped at a random position/orientation in a bounded grid is more
+    -- likely to fit (not go out of bounds) the closer its start is to the
+    -- center -- a general geometric effect, not specific to this game.
+    -- Since the target count (5) never exceeds the 9 boxes, assign each
+    -- thermometer to its own shuffled box up front and require its start
+    -- cell to land there -- this guarantees real spread rather than
+    -- merely nudging the odds (a soft inverse-touch-count bias was tried
+    -- and found too weak: a start cell biased toward a corner box still
+    -- mostly extends its path *into* the center anyway).
+    local box_order = {}
+    for br = 1, 3 do for bc = 1, 3 do box_order[#box_order + 1] = { br = br, bc = bc } end end
+    for i = #box_order, 2, -1 do
+        local j = math.random(i)
+        box_order[i], box_order[j] = box_order[j], box_order[i]
+    end
 
-    while #thermos < 5 and attempts < max_attempts do
-        attempts = attempts + 1
+    local function randomCellInBox(box)
+        local row_in_box = math.random(0, 2)
+        local col_in_box = math.random(0, 2)
+        return (box.br - 1) * 3 + row_in_box + 1, (box.bc - 1) * 3 + col_in_box + 1
+    end
 
-        -- Pick random start cell
-        local r = math.random(1, n)
-        local c = math.random(1, n)
-        if cell_used[cellKey(r, c)] then goto continue end
+    -- Try to place one thermometer with its start cell restricted to
+    -- `box` (nil = anywhere). Returns true and appends to `thermos` on
+    -- success.
+    local function tryPlaceOne(box)
+        local r, c
+        if box then
+            r, c = randomCellInBox(box)
+        else
+            r, c = math.random(1, n), math.random(1, n)
+        end
+        if cell_used[cellKey(r, c)] then return false end
 
-        -- Pick random direction
-        local dir = directions[math.random(#directions)]
-
-        -- Pick length 3-5
+        local dir    = directions[math.random(#directions)]
         local length = math.random(3, 5)
 
-        -- Build candidate path
         local cells = { {r = r, c = c} }
-        local valid = true
         for i = 1, length - 1 do
             local nr = r + dir.dr * i
             local nc = c + dir.dc * i
-            if nr < 1 or nr > n or nc < 1 or nc > n then
-                valid = false
-                break
-            end
-            if cell_used[cellKey(nr, nc)] then
-                valid = false
-                break
-            end
+            if nr < 1 or nr > n or nc < 1 or nc > n then return false end
+            if cell_used[cellKey(nr, nc)] then return false end
             cells[#cells + 1] = {r = nr, c = nc}
         end
-        if not valid or #cells < 3 then goto continue end
+        if #cells < 3 then return false end
 
         -- Check strictly increasing along the path
         local increasing = true
@@ -122,20 +148,32 @@ local function placeThermos(solution)
             end
         end
 
-        if not increasing then goto continue end
+        if not increasing then return false end
 
-        -- Mark cells as used and store thermo
         for _, cell in ipairs(cells) do
             cell_used[cellKey(cell.r, cell.c)] = true
         end
         thermos[#thermos + 1] = { cells = cells }
-
-        ::continue::
+        return true
     end
 
-    -- Try to reach up to 7, stop at 5 minimum or when exhausted
-    if #thermos < 5 then
-        -- Acceptable - we'll just use what we have (minimum 2 for visual interest)
+    local target_count = 5
+    local box_sub_attempts = 200
+
+    for i = 1, target_count do
+        local box = box_order[i]
+        local placed = false
+        for _ = 1, box_sub_attempts do
+            if tryPlaceOne(box) then placed = true; break end
+        end
+        if not placed then
+            -- This box couldn't fit one (rare -- e.g. heavily used by
+            -- earlier thermometers); fall back to a free placement
+            -- anywhere so the target count is still reached.
+            for _ = 1, box_sub_attempts * 2 do
+                if tryPlaceOne(nil) then break end
+            end
+        end
     end
 
     return thermos
