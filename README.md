@@ -12,10 +12,11 @@ Standard 9×9 Sudoku rules plus **thermometer constraints**: digits along each t
 
 ## Features
 
-- **Three difficulty levels** — Easy, Medium, Hard
+- **Four difficulty levels** — Easy, Medium, Hard and Expert, each guaranteeing the grid is solvable by pure deduction with no guessing
 - **Thermometer display** — bulbs and tubes clearly shown on the grid
 - **Note mode** — pencil in candidate digits
 - **Check** — highlights cells violating thermometer constraints
+- **Hint** — reveals the next deduction in three taps: where to look, which technique and digit, then the value itself
 - **Reveal solution** — shows the full solution
 - **Undo** — step back through your moves
 - **Auto-save** — game state saved and restored on next launch
@@ -37,6 +38,7 @@ Standard 9×9 Sudoku rules plus **thermometer constraints**: digits along each t
 | Toggle note mode | Tap **Note: Off / On** |
 | Undo last move | Tap **Undo** |
 | Check progress | Tap **Check** |
+| Get a hint | Tap **Hint** (tap again to go deeper) |
 | New game | Tap **New game** |
 | Change difficulty | Tap **Diff** |
 | Show rules | Tap **Rules** |
