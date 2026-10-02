@@ -2,5 +2,5 @@ local _ = require("gettext")
 return {
     fullname    = _("Thermo Sudoku"),
     description = _("Sudoku with thermometer constraints"),
-    version     = "1.4.0",
+    version     = "1.4.1",
 }
