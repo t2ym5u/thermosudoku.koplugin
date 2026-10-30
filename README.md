@@ -40,7 +40,7 @@ Standard 9×9 Sudoku rules plus **thermometer constraints**: digits along each t
 | Check progress | Tap **Check** |
 | Get a hint | Tap **Hint** (tap again to go deeper) |
 | New game | Tap **New game** |
-| Change difficulty | Tap **Diff** |
+| Change difficulty | Tap **Difficulty** |
 | Show rules | Tap **Rules** |
 
 ## License
