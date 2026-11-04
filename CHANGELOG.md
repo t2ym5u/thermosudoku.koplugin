@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0] - 2026-11-04
+
+### Changed
+- New games are generated slightly faster, with exactly the same puzzles
+  (shared sudoku-common 1.7.0: incremental clue digging).
+- Uses less memory: the game loads when you open it, not when KOReader
+  starts, so it no longer takes memory or startup time while unplayed.
+
 ## [1.7.0] - 2026-11-04
 
 ### Changed
