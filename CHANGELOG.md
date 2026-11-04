@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2026-11-04
+
+### Changed
+- New games are generated faster, with the same puzzles: Expert worst case
+  on a desktop 60 → 40 ms (about 1 s on a Kobo instead of 1.5 s), the
+  other levels under 12 ms.
+- Shared sudoku-common 1.6.0: the deduction check behind every clue the
+  generator digs out runs about twice as fast, with exactly the same
+  deductions, so a given seed still deals the same puzzle.
+
 ## [1.6.0] - 2026-11-02
 
 ### Changed
